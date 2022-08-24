@@ -1,5 +1,7 @@
 package com.newsletter.service;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface UserService {
 
 	/**
@@ -8,4 +10,12 @@ public interface UserService {
 	 * @return regresa el resultado. OK operaci&oacute;n exitosa, DUP email existente
 	 */
 	public String save(String email);
+	
+	
+	/**
+	 * Env&iacute;a el correo a los usuarios con el archivo cargado
+	 * @param file
+	 * @return
+	 */
+	public String sendNewsletter(MultipartFile file);
 }
