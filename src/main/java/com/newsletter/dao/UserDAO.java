@@ -1,6 +1,6 @@
 package com.newsletter.dao;
 
-import com.newletter.entity.User;
+import com.newsletter.persistence.entity.User;
 
 public interface UserDAO {
 	

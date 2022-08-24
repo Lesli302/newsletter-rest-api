@@ -18,4 +18,12 @@ public interface UserService {
 	 * @return
 	 */
 	public String sendNewsletter(MultipartFile file);
+	
+	
+	/**
+	 * Agrega varios usuarios 
+	 * @param file
+	 * @return
+	 */
+	public String addList(MultipartFile file);
 }

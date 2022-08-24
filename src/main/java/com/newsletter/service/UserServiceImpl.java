@@ -2,12 +2,23 @@ package com.newsletter.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
+import javax.activation.DataSource;
+import javax.mail.BodyPart;
+import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.util.ByteArrayDataSource;
 
+import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +40,12 @@ public class UserServiceImpl implements UserService {
 	 
     @Value("${spring.mail.username}") 
     private String sender;
+    
+    @Value("${spring.mail.password}") 
+    private String pass;
+    
+    private Session session;
+
 	
 	List<String> emailList=new ArrayList<>();
 	
@@ -52,7 +69,29 @@ public class UserServiceImpl implements UserService {
     public String sendNewsletter(MultipartFile file) {
 		try {
 			logger.info("Enviando correo.");
-			return sendAttachmentEmail(file.getName(), file.getBytes(), emailList);
+			InputStream initialStream = file.getInputStream();
+			return sendAttachmentEmail(file.getName(), initialStream.readAllBytes(), emailList);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return "";
+    }
+	
+	@Override
+    public String addList(MultipartFile file) {
+		try {
+			if (!file.isEmpty()) {
+				logger.info("archivo no vacio.");
+				InputStream initialStream = file.getInputStream();
+				Scanner obj = new Scanner(initialStream);
+			    while (obj.hasNextLine())
+			    	logger.info("Correos: {}", (obj.nextLine()));
+			   
+			} else {
+			      return "You failed to upload " + file.getName() + " because the file was empty.";
+			}
+	        	
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -71,14 +110,23 @@ public class UserServiceImpl implements UserService {
                 = new MimeMessageHelper(mimeMessage, true);
             mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setTo(destinatarios.stream().toArray(String[]::new));
-            mimeMessageHelper.setText("Te enviamos la noticia de hoy");
+            mimeMessageHelper.setText("Te enviamos la noticia de hoy. Para no recibir mas correos da click en el siguiente link: ");
             mimeMessageHelper.setSubject("Newsletter");
- 
-            FileSystemResource fileResource = new FileSystemResource(new File(fileName));
- 
-            mimeMessageHelper.addAttachment(fileResource.getFilename(), fileResource);
+
+            Tika tika = new Tika();
+            String mimeType = tika.detect(file);
+            logger.info("mimeType. {}", mimeType);
+            DataSource datasource;
+            if (mimeType.equals("application/pdf"))
+            	datasource = new ByteArrayDataSource(file, mimeType);
+            else {
+            	BodyPart imagen = new MimeBodyPart();
+            	datasource = new ByteArrayDataSource(file, "text/html");
+            }
+            mimeMessageHelper.addAttachment(fileName, datasource);
  
             javaMailSender.send(mimeMessage);
+        	
             logger.info("Success.");
             return "Mail sent Successfully";
         }

@@ -44,4 +44,14 @@ public class UserController {
 
     }
 	
+	@PostMapping(path="/addList")
+    public ResponseEntity<String> addList(@RequestParam("file") MultipartFile file) {
+		logger.info("Servicio para agregar lista de usuarios.");
+        
+        String res = userService.addList(file);
+
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
+
+    }
+	
 }
