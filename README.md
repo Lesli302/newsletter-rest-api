@@ -16,17 +16,15 @@ Debe desacargar el proyecto de la siguiente ruta para obtener una copia del proy
 ### Iniciar servicios
 Para generar el jar y poder visualizar los servicios, se deben de seguir las siguientes instrucciones:
 
-'''bash
+```bash
 cd ${workspace}/newsletter-apirest
-'''
-'''bash
+```
+```bash
 mvn clean install
-'''
-'''bash
+```
+```bash
 cd ${workspace}/newsletter-apirest/target
-'''
-'''bash
+```
+```bash
 java -jar newsletter-apirest-${version}-SNAPSHOT.jar
-'''
-
-Tambien se pueden realizar 
+```
