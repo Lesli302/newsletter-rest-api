@@ -15,7 +15,14 @@ public interface UserService {
 	/**
 	 * Agrega varios usuarios 
 	 * @param file
-	 * @return
+	 * @return respuesta de servicio
 	 */
 	public String addList(MultipartFile file);
+	
+	
+	/**
+	 * elimina usuario por email
+	 * @param email correo a eliminar
+	 */
+	public void delete(String email);
 }

@@ -11,5 +11,5 @@ import com.newsletter.persistence.entity.User;
 public interface UserRepository extends MongoRepository<User,String> {
 	
 	List<User> findByEmail(String email);
-
+	
 }

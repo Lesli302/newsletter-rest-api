@@ -1,5 +1,6 @@
 package com.newsletter.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,10 +20,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import com.newsletter.persistence.entity.User;
 import com.newsletter.persistence.repository.UserRepository;
@@ -37,6 +41,9 @@ public class MailServiceImpl implements MailService{
 	
 	@Autowired 
 	private UserRepository userRepository;
+	
+	@Autowired 
+	private TemplateEngine templateEngine;
 	 
 	@Value("${spring.mail.username}") 
     private String sender;
@@ -50,10 +57,8 @@ public class MailServiceImpl implements MailService{
 			log.info("Enviando correo.");
 			InputStream initialStream = file.getInputStream();
 			List<User> usersFounded = userRepository.findAll();
-			List<String> emails = new ArrayList<>();
-			usersFounded.forEach(k -> emails.add(k.getEmail()));
-			if (!emails.isEmpty())
-				return sendAttachmentEmail(file.getName(), initialStream.readAllBytes(), emails);
+			if (!usersFounded.isEmpty())
+				return sendAttachmentEmail(file.getName(), initialStream.readAllBytes(), usersFounded);
 			else
 				return "";
 		} catch (IOException e1) {
@@ -62,37 +67,36 @@ public class MailServiceImpl implements MailService{
 		}
 		return "";
     }
-	
+
     
-    private String sendAttachmentEmail (String fileName, byte[] file, List<String> destinatarios) {
+    private String sendAttachmentEmail (String fileName, byte[] bytes, List<User> usersFounded) {
     	log.info("Adjuntando archivo.");
+    	
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper mimeMessageHelper;
- 
+        
         try {
- 
-            mimeMessageHelper
-                = new MimeMessageHelper(mimeMessage, true);
+        	MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             mimeMessageHelper.setFrom(sender);
-            mimeMessageHelper.setTo(destinatarios.stream().toArray(String[]::new));
-            mimeMessageHelper.setText("Te enviamos la noticia de hoy. <br/><br/>Para no recibir mas correos da click en el siguiente link: <a href=''>unsuscribe</a>", true);
             mimeMessageHelper.setSubject("Newsletter");
 
             Tika tika = new Tika();
-            String mimeType = tika.detect(file);
-            log.info("mimeType. {}", mimeType);
-            DataSource datasource;
-            if (mimeType.equals("application/pdf"))
-            	datasource = new ByteArrayDataSource(file, mimeType);
-            else {
-            	//BodyPart imagen = new MimeBodyPart();
-            	datasource = new ByteArrayDataSource(file, "text/html");
-            }
+            String mimeType = tika.detect(bytes);
+            DataSource datasource = new ByteArrayDataSource(bytes, mimeType);
+
             mimeMessageHelper.addAttachment(fileName, datasource);
- 
-            javaMailSender.send(mimeMessage);
-        	
-            log.info("Success.");
+           
+            for(User user:usersFounded) {
+            	mimeMessageHelper.setTo(user.getEmail());
+	            Context context =  new Context();
+	        	context.setVariable("email", user.getEmail());
+	        	String path="http://localhost:8080/userApi/" + user.getDocumentId() + "/deleteUser";
+	        	context.setVariable("unsuscribe", path);
+	        	String htmlContent = templateEngine.process("template-newsletter",context);
+	        	mimeMessageHelper.setText(htmlContent, true);
+	            javaMailSender.send(mimeMessage);
+	            log.info("Correo enviado a: {}", user.getEmail());
+            }
+            
             return "Correo enviado.";
         }
         catch (MessagingException e) {

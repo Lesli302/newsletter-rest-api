@@ -98,4 +98,14 @@ public class UserServiceImpl implements UserService {
 		return "";
     }
 	
+	@Override
+    public void delete(String id) {
+		
+		String res="OK";
+		
+		userRepository.deleteById(id);
+		log.info("Se elimina correo", id);
+		
+    }
+	
 }
