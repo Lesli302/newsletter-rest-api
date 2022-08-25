@@ -29,22 +29,22 @@ public class UserController {
 	
 	
 	@PostMapping(path="/addUser")
-    public ResponseEntity<String> addUser(@RequestBody String email) {
+    public ResponseEntity<Object> addUser(@RequestBody String email) {
 		logger.info("Servicio para agregar usuario.");
         
-        String res = userService.save(email);
+        userService.save(email);
 
-        return new ResponseEntity<>(res, HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.CREATED);
 
     }
 	
 	@PostMapping(path="/addList")
-    public ResponseEntity<String> addList(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> addList(@RequestParam("file") MultipartFile file) {
 		logger.info("Servicio para agregar lista de usuarios.");
         
-        String res = userService.addList(file);
+        userService.addList(file);
 
-        return new ResponseEntity<>(res, HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.CREATED);
 
     }
 	
@@ -54,7 +54,7 @@ public class UserController {
         
         userService.delete(id);
 
-        return ResponseEntity.ok(true);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 	
 }

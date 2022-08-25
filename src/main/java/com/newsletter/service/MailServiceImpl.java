@@ -50,26 +50,33 @@ public class MailServiceImpl implements MailService{
     
     @Value("${spring.mail.password}") 
     private String pass;
+    
+    private final String MIME_TYPE_PDF = "application/pdf";
+    
+    private final String MIME_TYPE_PNG = "image/png";
 	
     @Override
-    public String sendNewsletter(MultipartFile file) {
+    public void sendNewsletter(MultipartFile file) {
 		try {
 			log.info("Enviando correo.");
 			InputStream initialStream = file.getInputStream();
-			List<User> usersFounded = userRepository.findAll();
-			if (!usersFounded.isEmpty())
-				return sendAttachmentEmail(file.getName(), initialStream.readAllBytes(), usersFounded);
-			else
-				return "";
+			Tika tika = new Tika();
+            String mimeType = tika.detect(initialStream.readAllBytes());
+            // TODO Agregar tipos de mimetype a archivo de propiedades para que sea configurable
+			if(mimeType.equals(MIME_TYPE_PDF) || mimeType.equals(MIME_TYPE_PNG)) {
+				List<User> usersFounded = userRepository.findAll();
+				// TODO Agregar validaci\u00EDn para correos duplicados
+				if (!usersFounded.isEmpty())
+					sendAttachmentEmail(file.getName(), initialStream.readAllBytes(), usersFounded, mimeType);
+			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		return "";
     }
 
     
-    private String sendAttachmentEmail (String fileName, byte[] bytes, List<User> usersFounded) {
+    private void sendAttachmentEmail (String fileName, byte[] bytes, List<User> usersFounded, String mimeType) {
     	log.info("Adjuntando archivo.");
     	
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -78,9 +85,7 @@ public class MailServiceImpl implements MailService{
         	MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setSubject("Newsletter");
-
-            Tika tika = new Tika();
-            String mimeType = tika.detect(bytes);
+            
             DataSource datasource = new ByteArrayDataSource(bytes, mimeType);
 
             mimeMessageHelper.addAttachment(fileName, datasource);
@@ -89,19 +94,16 @@ public class MailServiceImpl implements MailService{
             	mimeMessageHelper.setTo(user.getEmail());
 	            Context context =  new Context();
 	        	context.setVariable("email", user.getEmail());
-	        	String path="http://localhost:8080/userApi/" + user.getDocumentId() + "/deleteUser";
-	        	context.setVariable("unsuscribe", path);
+	        	String path="http://localhost:8080/unsubscribe/" + user.getDocumentId();
+	        	context.setVariable("unsubscribe", path);
 	        	String htmlContent = templateEngine.process("template-newsletter",context);
 	        	mimeMessageHelper.setText(htmlContent, true);
 	            javaMailSender.send(mimeMessage);
 	            log.info("Correo enviado a: {}", user.getEmail());
             }
-            
-            return "Correo enviado.";
         }
         catch (MessagingException e) {
         	log.error("Fail. {}", e.getMessage());
-            return "Error al enviar el correo.";
         }
 	}
 

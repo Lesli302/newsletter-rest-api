@@ -9,7 +9,7 @@ public interface MailService {
 	 * @param file
 	 * @return
 	 */
-	public String sendNewsletter(MultipartFile file);
+	public void sendNewsletter(MultipartFile file);
 	
 	
 

@@ -9,7 +9,7 @@ public interface UserService {
 	 * @param User objeto con datos del usuario
 	 * @return regresa el resultado. OK operaci&oacute;n exitosa, DUP email existente
 	 */
-	public String save(String email);
+	public void save(String email);
 	
 	
 	/**
@@ -17,7 +17,7 @@ public interface UserService {
 	 * @param file
 	 * @return respuesta de servicio
 	 */
-	public String addList(MultipartFile file);
+	public void addList(MultipartFile file);
 	
 	
 	/**

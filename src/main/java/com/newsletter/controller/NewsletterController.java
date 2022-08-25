@@ -25,12 +25,13 @@ public class NewsletterController {
 	
 	
 	@PostMapping(path="/sendNewsletter")
-    public ResponseEntity<String> sendNewsletter(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> sendNewsletter(@RequestParam("file") MultipartFile file) {
+		// TODO Agregar swagger
 		logger.info("Servicio para enviar de newsletter.");
         
-        String res = mailService.sendNewsletter(file);
+        mailService.sendNewsletter(file);
 
-        return new ResponseEntity<>(res, HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.OK);
 
     }
 	

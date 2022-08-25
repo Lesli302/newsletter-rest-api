@@ -44,68 +44,47 @@ import lombok.extern.slf4j.Slf4j;
 public class UserServiceImpl implements UserService {
 
 	@Autowired 
-	private JavaMailSender javaMailSender;
-	
-	@Autowired 
 	private UserRepository userRepository;
 	 
 	
 	@Override
-    public String save(String email) {
-		
-		String res="OK";
-		//  solo agrega el correo si no existe en la bd
-		
-		List<User> usersFounded = userRepository.findByEmail(email);
-		log.info("resultado: {}", usersFounded);
-		List<String> emails = new ArrayList<>();
-		usersFounded.forEach(k -> emails.add(k.getEmail()));
-		if (!emails.contains(email)) {
+    public void save(String email) {
+		// TODO Validar formato de correos 
+		//  solo se agrega el correo si no existe en la bd
+		List<User> usersList = userRepository.findByEmail(email);
+		if (usersList.isEmpty()) {
 			log.info("Se agrega correo: {}", email);
 			User user = new User();
 			user.setEmail(email);
-    		User userRes = userRepository.insert(user);
+    		User userRes = userRepository.save(user);
 		}
 		else {
 			log.info("Correo ya existente: {}", email);
-			res="FAIL";
 		}
-        return res;
     }
 	
 	
 	@Override
-    public String addList(MultipartFile file) {
+    public void addList(MultipartFile file) {
 		try {
 			if (!file.isEmpty()) {
 				InputStream initialStream = file.getInputStream();
 				Scanner obj = new Scanner(initialStream);
 			    while (obj.hasNextLine()) {
-			    	log.info("Correo a insertar: {}", (obj.nextLine()));
-			    	User user = new User();
-			    	user.setEmail(obj.nextLine());
-			    	User userRes = userRepository.insert(user);
+			    	save(obj.nextLine());
 			    }
-			   
-			} else {
-			      return "You failed to upload " + file.getName() + " because the file was empty.";
 			}
-	        	
+			else
+				log.info("Archivo vac\u00EDo");
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			log.error("Error al agregar lista de usuario. {}", e1.getMessage());
 		}
-		return "";
     }
 	
 	@Override
     public void delete(String id) {
-		
-		String res="OK";
-		
 		userRepository.deleteById(id);
-		log.info("Se elimina correo", id);
-		
+		log.info("Se elimina correo. ");
     }
 	
 }
