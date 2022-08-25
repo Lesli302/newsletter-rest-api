@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
-@SpringBootApplication (scanBasePackages = { "com.newsletter.controller", "com.newsletter.service", "com.newsletter.persistence.repository"})
+@SpringBootApplication (scanBasePackages = { "com.newsletter.config","com.newsletter.controller", "com.newsletter.service", "com.newsletter.persistence.repository"})
 public class NewsletterApirestApplication {
 
 	public static void main(String[] args) {

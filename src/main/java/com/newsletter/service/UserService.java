@@ -2,6 +2,8 @@ package com.newsletter.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.newsletter.persistence.entity.User;
+
 public interface UserService {
 
 	/**
@@ -9,7 +11,7 @@ public interface UserService {
 	 * @param User objeto con datos del usuario
 	 * @return regresa el resultado. OK operaci&oacute;n exitosa, DUP email existente
 	 */
-	public void save(String email);
+	public User save(String email);
 	
 	
 	/**

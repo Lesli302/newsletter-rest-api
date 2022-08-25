@@ -48,19 +48,21 @@ public class UserServiceImpl implements UserService {
 	 
 	
 	@Override
-    public void save(String email) {
+    public User save(String email) {
 		// TODO Validar formato de correos 
 		//  solo se agrega el correo si no existe en la bd
+		User userRes = null;
 		List<User> usersList = userRepository.findByEmail(email);
 		if (usersList.isEmpty()) {
 			log.info("Se agrega correo: {}", email);
 			User user = new User();
 			user.setEmail(email);
-    		User userRes = userRepository.save(user);
+    		userRes = userRepository.save(user);
 		}
 		else {
 			log.info("Correo ya existente: {}", email);
 		}
+		return userRes;
     }
 	
 	
@@ -71,7 +73,7 @@ public class UserServiceImpl implements UserService {
 				InputStream initialStream = file.getInputStream();
 				Scanner obj = new Scanner(initialStream);
 			    while (obj.hasNextLine()) {
-			    	save(obj.nextLine());
+			    	User u = save(obj.nextLine());
 			    }
 			}
 			else

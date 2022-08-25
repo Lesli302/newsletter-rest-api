@@ -1,7 +1,5 @@
 package com.newsletter.controller;
 
-import javax.websocket.server.PathParam;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.newsletter.persistence.entity.User;
 import com.newsletter.service.UserService;
 
 
@@ -29,12 +28,15 @@ public class UserController {
 	
 	
 	@PostMapping(path="/addUser")
-    public ResponseEntity<Object> addUser(@RequestBody String email) {
+    public ResponseEntity<String> addUser(@RequestBody String email) {
 		logger.info("Servicio para agregar usuario.");
         
-        userService.save(email);
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        User user = userService.save(email);
+        
+        if (user != null)
+        	return new ResponseEntity<String>("Usuario agregado.", HttpStatus.CREATED);
+        
+        return new ResponseEntity<String>("Usuario existente.",HttpStatus.NOT_MODIFIED);
 
     }
 	
