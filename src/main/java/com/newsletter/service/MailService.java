@@ -1,9 +1,16 @@
 package com.newsletter.service;
 
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface MailService {
 	
-	public String sendAttachmentEmail (String fileName, byte[] file, List<String> destinatarios);
+	/**
+	 * Env&iacute;a el correo a los usuarios con el archivo cargado
+	 * @param file
+	 * @return
+	 */
+	public String sendNewsletter(MultipartFile file);
+	
+	
 
 }

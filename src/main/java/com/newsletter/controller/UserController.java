@@ -16,7 +16,7 @@ import com.newsletter.service.UserService;
 
 
 @RestController
-@RequestMapping("/newsletterApi") 
+@RequestMapping("/userApi") 
 public class UserController {
 	
 	final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -29,16 +29,6 @@ public class UserController {
 		logger.info("Servicio para agregar usuario.");
         
         String res = userService.save(email);
-
-        return new ResponseEntity<>(res, HttpStatus.CREATED);
-
-    }
-	
-	@PostMapping(path="/sendNewsletter")
-    public ResponseEntity<String> sendNewsletter(@RequestParam("file") MultipartFile file) {
-		logger.info("Servicio para enviar de newsletter.");
-        
-        String res = userService.sendNewsletter(file);
 
         return new ResponseEntity<>(res, HttpStatus.CREATED);
 

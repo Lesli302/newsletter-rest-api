@@ -4,8 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.activation.DataSource;
 import javax.mail.BodyPart;
@@ -29,64 +33,59 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.newsletter.controller.UserController;
+import com.newsletter.persistence.entity.User;
+import com.newsletter.persistence.repository.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
-	final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-
 	@Autowired 
 	private JavaMailSender javaMailSender;
-	 
-    @Value("${spring.mail.username}") 
-    private String sender;
-    
-    @Value("${spring.mail.password}") 
-    private String pass;
-    
-    private Session session;
-
 	
-	List<String> emailList=new ArrayList<>();
+	@Autowired 
+	private UserRepository userRepository;
+	 
 	
 	@Override
     public String save(String email) {
 		
 		String res="OK";
-		//  solo agrega el correo si no existe en la lista
-		if (!emailList.contains(email))
-			emailList.add(email);
-		else
+		//  solo agrega el correo si no existe en la bd
+		
+		List<User> usersFounded = userRepository.findByEmail(email);
+		log.info("resultado: {}", usersFounded);
+		List<String> emails = new ArrayList<>();
+		usersFounded.forEach(k -> emails.add(k.getEmail()));
+		if (!emails.contains(email)) {
+			log.info("Se agrega correo: {}", email);
+			User user = new User();
+			user.setEmail(email);
+    		User userRes = userRepository.insert(user);
+		}
+		else {
+			log.info("Correo ya existente: {}", email);
 			res="FAIL";
-        for(String e:emailList) {
-        	logger.info("Correo agregado: {}", e);
-        }
+		}
         return res;
     }
 	
 	
 	@Override
-    public String sendNewsletter(MultipartFile file) {
-		try {
-			logger.info("Enviando correo.");
-			InputStream initialStream = file.getInputStream();
-			return sendAttachmentEmail(file.getName(), initialStream.readAllBytes(), emailList);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		return "";
-    }
-	
-	@Override
     public String addList(MultipartFile file) {
 		try {
 			if (!file.isEmpty()) {
-				logger.info("archivo no vacio.");
 				InputStream initialStream = file.getInputStream();
 				Scanner obj = new Scanner(initialStream);
-			    while (obj.hasNextLine())
-			    	logger.info("Correos: {}", (obj.nextLine()));
+			    while (obj.hasNextLine()) {
+			    	log.info("Correo a insertar: {}", (obj.nextLine()));
+			    	User user = new User();
+			    	user.setEmail(obj.nextLine());
+			    	User userRes = userRepository.insert(user);
+			    }
 			   
 			} else {
 			      return "You failed to upload " + file.getName() + " because the file was empty.";
@@ -99,40 +98,4 @@ public class UserServiceImpl implements UserService {
 		return "";
     }
 	
-	private String sendAttachmentEmail (String fileName, byte[] file, List<String> destinatarios) {
-		logger.info("Adjuntando archivo.");
-		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper mimeMessageHelper;
- 
-        try {
- 
-            mimeMessageHelper
-                = new MimeMessageHelper(mimeMessage, true);
-            mimeMessageHelper.setFrom(sender);
-            mimeMessageHelper.setTo(destinatarios.stream().toArray(String[]::new));
-            mimeMessageHelper.setText("Te enviamos la noticia de hoy. Para no recibir mas correos da click en el siguiente link: ");
-            mimeMessageHelper.setSubject("Newsletter");
-
-            Tika tika = new Tika();
-            String mimeType = tika.detect(file);
-            logger.info("mimeType. {}", mimeType);
-            DataSource datasource;
-            if (mimeType.equals("application/pdf"))
-            	datasource = new ByteArrayDataSource(file, mimeType);
-            else {
-            	BodyPart imagen = new MimeBodyPart();
-            	datasource = new ByteArrayDataSource(file, "text/html");
-            }
-            mimeMessageHelper.addAttachment(fileName, datasource);
- 
-            javaMailSender.send(mimeMessage);
-        	
-            logger.info("Success.");
-            return "Mail sent Successfully";
-        }
-        catch (MessagingException e) {
-        	logger.error("Fail. {}", e.getMessage());
-            return "Error while sending mail!!!";
-        }
-	}
 }

@@ -13,14 +13,6 @@ public interface UserService {
 	
 	
 	/**
-	 * Env&iacute;a el correo a los usuarios con el archivo cargado
-	 * @param file
-	 * @return
-	 */
-	public String sendNewsletter(MultipartFile file);
-	
-	
-	/**
 	 * Agrega varios usuarios 
 	 * @param file
 	 * @return
