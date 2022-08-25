@@ -85,8 +85,7 @@ public class MailServiceImpl implements MailService{
             mimeMessageHelper.setSubject("Newsletter");
             
             Tika tika = new Tika();
-          String mimeType = tika.detect(bytes);
-          log.info("mimeType: {}", mimeType);
+            String mimeType = tika.detect(bytes);
             DataSource datasource = new ByteArrayDataSource(bytes, mimeType);
 
             mimeMessageHelper.addAttachment(fileName, datasource);
