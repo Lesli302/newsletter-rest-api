@@ -51,32 +51,30 @@ public class MailServiceImpl implements MailService{
     @Value("${spring.mail.password}") 
     private String pass;
     
-    private final String MIME_TYPE_PDF = "application/pdf";
-    
-    private final String MIME_TYPE_PNG = "image/png";
-	
     @Override
     public void sendNewsletter(MultipartFile file) {
 		try {
 			log.info("Enviando correo.");
 			InputStream initialStream = file.getInputStream();
-			Tika tika = new Tika();
-            String mimeType = tika.detect(initialStream.readAllBytes());
+			// TODO Validar que el archivo recibido sea PDF O PNG 
             // TODO Agregar tipos de mimetype a archivo de propiedades para que sea configurable
-			if(mimeType.equals(MIME_TYPE_PDF) || mimeType.equals(MIME_TYPE_PNG)) {
-				List<User> usersFounded = userRepository.findAll();
-				// TODO Agregar validaci\u00EDn para correos duplicados
-				if (!usersFounded.isEmpty())
-					sendAttachmentEmail(file.getName(), initialStream.readAllBytes(), usersFounded, mimeType);
-			}
+			List<User> usersFounded = userRepository.findAll();
+			// TODO Agregar validaci\u00EDn para correos duplicados
+			if (!usersFounded.isEmpty())
+				sendAttachmentEmail(file.getName(), initialStream.readAllBytes(), usersFounded);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
     }
 
-    
-    private void sendAttachmentEmail (String fileName, byte[] bytes, List<User> usersFounded, String mimeType) {
+    /**
+     * Envia correo electronico 
+     * @param fileName
+     * @param bytes
+     * @param usersFounded
+     */
+    private void sendAttachmentEmail (String fileName, byte[] bytes, List<User> usersFounded) {
     	log.info("Adjuntando archivo.");
     	
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -86,6 +84,9 @@ public class MailServiceImpl implements MailService{
             mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setSubject("Newsletter");
             
+            Tika tika = new Tika();
+          String mimeType = tika.detect(bytes);
+          log.info("mimeType: {}", mimeType);
             DataSource datasource = new ByteArrayDataSource(bytes, mimeType);
 
             mimeMessageHelper.addAttachment(fileName, datasource);
