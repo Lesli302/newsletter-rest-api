@@ -5,8 +5,8 @@ La aplicación se ejecuta con [Spring Boot](https://spring.io/projects/spring-bo
 
 ### Prerequisitos
 Se requieren las siguientes herrammientas previamente instaladas y configuradas:
-* [Java] Version 8 o superior
-* [Maven] Version 3 o superior
+* [Java] Version 9 o posterior
+* [Maven] Version 3
 * [MongoDB para MacOS](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/)
 
 ### Descarga
@@ -21,14 +21,28 @@ Para que la aplicación funcione correctamente, se deben de tener en cuenta los 
 *spring.data.mongodb.host=localhost*  
 *spring.data.mongodb.port=27017*  
 
-- Correo electrónico. Se debe de configurar el usuario y contraseña para el envío de correo, ya que esto lo realiza utilzando los servicios de Gmail. Puede apoyarse de la siguiente información []
+- Correo electrónico. Se debe de configurar el usuario y contraseña para el envío de correo, ya que esto lo realiza utilzando los servicios de Gmail. NOTA: Se tiene cierto número envíos de correo por día.
 
 *sspring.mail.username=eilsel.test@gmail.com*  
 *spring.mail.password=azmqodlydzwvbvnn* ***NO es la contraseña del correo, debe de ser la CONTRASEÑA DE APLICACION***  
 
 
 ### Iniciar servicios
-Para generar el jar y poder visualizar los servicios, se deben de seguir las siguientes instrucciones:
+Para iniciar los servicios desde el IDE, debe de realizar lo siguiente:
+
+- Compilar el proyecto  
+- Seleccionar el nombre del proyecto  
+- Ejecutar como SpringBootApp
+
+ó
+
+- Compilar el proyecto  
+- Ubicar la clase *NewsletterApirestApplication.java*
+- Ejecutar como java
+
+ó
+
+Desde la terminal:
 
 ```bash
 cd ${workspace}/newsletter-apirest
